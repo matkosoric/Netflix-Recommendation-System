@@ -1,17 +1,28 @@
+
+import java.util
+
+import org.apache.spark.sql.{Row, SaveMode, SparkSession}
+import org.apache.spark.sql.types._
+
+
 object Netflix {
 
   def main(args: Array[String]): Unit = {
 
-    val spark = org.apache.spark.sql.SparkSession.builder
+    val spark: SparkSession = org.apache.spark.sql.SparkSession.builder
       .master("local")
       .appName("Netflix Recommendation System")
       .getOrCreate;
+    import spark.implicits._
 
 
-    val textFile = spark.sparkContext.textFile("src/main/resources/test.csv")
-    val header = textFile.first()
 
-    textFile.filter( row => !row.contains(":") ).foreach(println)
+    val schema = new StructType()
+      .add(StructField("movieId", LongType, true))
+      .add(StructField("userId", LongType, true))
+      .add(StructField("rating", LongType, true))
+      .add(StructField("date", DateType, true))
+
 
 
 
