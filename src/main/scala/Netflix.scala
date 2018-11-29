@@ -21,6 +21,12 @@ object Netflix {
       .add(StructField("date", DateType, true))
 
 
+    val loadingDF = spark.read
+      .option("header", "true")
+      .schema(schema)
+      .parquet("netflix-data-parquet")
+
+    println(loadingDF.count())
 
 
     //    val loadingDF = spark.read

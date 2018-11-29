@@ -18,14 +18,17 @@ object Preprocessing2 {
 
     val fourElementLogs = spark.read
       .format("com.databricks.spark.csv")
-//      .option("dateFormat", "yyyy-MM-dd")
+      .option("dateFormat", "yyyy-MM-dd")
       .schema(schema)
-//        .csv("full_logs/part-00000-96491c87-24d2-44fb-bc42-15e9ddca1bac-c000.csv")
-      .load("full_logs/part-00000-96639f73-d907-4c48-bbdb-0cb8b550be72-c000.csv")
+      .load("full_logs/part-*.txt")
 
-    fourElementLogs.toDF().show()
-
-    fourElementLogs.toDF().coalesce(1)
+//    spark.sparkContext.getConf.set("spark.sql.parquet.compression.codec", "snappy")
+    fourElementLogs
+      .coalesce(1)
+      .write
+      .option("header","true")
+      .mode("overwrite")
+      .parquet("netflix-data-parquet")
 
   }
 

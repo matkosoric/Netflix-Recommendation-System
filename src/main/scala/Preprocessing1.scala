@@ -2,7 +2,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{SaveMode, SparkSession}
 
-object Preprocessing {
+object Preprocessing1 {
 
   def main(args: Array[String]): Unit = {
 
@@ -23,7 +23,7 @@ object Preprocessing {
 
       val logs2 = newLogs.filter(row => !row.toString().contains(":"))
 
-      logs2.write.mode(SaveMode.Append).csv ("full_logs")
+      logs2.write.mode(SaveMode.Append).text("full_logs")
 
     })
 
