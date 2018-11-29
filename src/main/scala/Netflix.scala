@@ -13,9 +13,6 @@ object Netflix {
       .master("local")
       .appName("Netflix Recommendation System")
       .getOrCreate;
-    import spark.implicits._
-
-
 
     val schema = new StructType()
       .add(StructField("movieId", LongType, true))
