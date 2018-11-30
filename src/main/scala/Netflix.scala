@@ -4,6 +4,8 @@ import org.apache.spark.ml.recommendation.ALS
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 
+import scala.util.Random
+
 object Netflix {
 
   def main(args: Array[String]): Unit = {
@@ -12,6 +14,8 @@ object Netflix {
       .master("local")
       .appName("Netflix Recommendation System")
       .getOrCreate;
+
+    spark.sparkContext.setLogLevel("ERROR")
 
     val fourElementsSchema = new StructType()
       .add(StructField("movieId", LongType, true))
@@ -44,18 +48,33 @@ object Netflix {
 //    combinedTitleRatingUser.createOrReplaceTempView("netflix")
 //    spark.sql("SELECT title, AVG(rating) AS score FROM netflix GROUP BY title ORDER BY score DESC").show(40, false)
 
-    val Array(training, test) = combinedTitleRatingUser.randomSplit(Array(0.8, 0.2))
+    val Array(training, test) = combinedTitleRatingUser.randomSplit(Array(0.8, 0.2), 1234)
 
+    training.cache()
+    test.cache()
 
-    val als = new ALS()
-      .setMaxIter(5)
-      .setRegParam(0.01)
-      .setUserCol("userId")
-      .setItemCol("movieId")
-      .setRatingCol("rating")
-    val model = als.fit(training)
+    val model = new ALS().
+      setSeed(Random.nextLong()).
+      setImplicitPrefs(true).
+      setRank(10).
+      setRegParam(0.01).
+      setAlpha(1.0).
+      setMaxIter(5).
+      setUserCol("userId").
+      setItemCol("movieId").
+      setRatingCol("rating").
+      setPredictionCol("prediction").
+      fit(training)
+      .setColdStartStrategy("drop")
 
-    model.setColdStartStrategy("drop")
+//    val als = new ALS()
+//      .setMaxIter(5)
+//      .setRegParam(0.01)
+//      .setUserCol("userId")
+//      .setItemCol("movieId")
+//      .setRatingCol("rating")
+//    val model = als.fit(training)
+//    model.setColdStartStrategy("drop")
 
     val predictions = model.transform(test)
 
@@ -64,23 +83,25 @@ object Netflix {
       .setLabelCol("rating")
       .setPredictionCol("prediction")
     val rmse = evaluator.evaluate(predictions)
+
     println(s"Root-mean-square error = $rmse")
 
     val userRecs = model.recommendForAllUsers(10)
     // Generate top 10 user recommendations for each movie
     val movieRecs = model.recommendForAllItems(10)
 
+
     // Generate top 10 movie recommendations for a specified set of users
-    val users = combinedTitleRatingUser.select(als.getUserCol).distinct().limit(3)
+    val users = combinedTitleRatingUser.select(model.getUserCol).distinct().limit(3)
     val userSubsetRecs = model.recommendForUserSubset(users, 10)
     // Generate top 10 user recommendations for a specified set of movies
-    val movies = combinedTitleRatingUser.select(als.getItemCol).distinct().limit(3)
+    val movies = combinedTitleRatingUser.select(model.getItemCol).distinct().limit(3)
     val movieSubSetRecs = model.recommendForItemSubset(movies, 10)
 
-    userRecs.show()
-    movieRecs.show()
-    userSubsetRecs.show()
-    movieSubSetRecs.show()
+    userRecs.show(false)
+    movieRecs.show(false)
+    userSubsetRecs.show(false)
+    movieSubSetRecs.show(false)
 
 
     spark.stop()
