@@ -1,16 +1,11 @@
 
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.util.Calendar
 
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.recommendation.ALS
-import org.apache.spark.mllib.evaluation.RegressionMetrics
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
-import org.joda.time.Minutes
-
-import scala.util.Random
 
 object Netflix {
 
@@ -81,12 +76,15 @@ object Netflix {
 
 
 //    1‰ subdataset for speed
-    val Array(combinedTitleRatingUser2, dropping) = combinedTitleRatingUser.randomSplit(Array(0.001, 0.999), 125)
-    val Array(training, test) = combinedTitleRatingUser2.randomSplit(Array(0.8, 0.2), 73)
+//    val Array(combinedTitleRatingUser2, dropping) = combinedTitleRatingUser.randomSplit(Array(0.001, 0.999), 125)
+//    val Array(training, test) = combinedTitleRatingUser2.randomSplit(Array(0.8, 0.2), 73)
 
     // COMPLETE DATASET
-//    val Array(training, test) = combinedTitleRatingUser.randomSplit(Array(0.8, 0.2), 73)
+    val Array(training, test) = combinedTitleRatingUser.randomSplit(Array(0.8, 0.2), 73)
 
+
+    test.cache()
+    training.cache()
 
     test.describe().show()
     training.describe().show()
@@ -95,10 +93,10 @@ object Netflix {
     val model = new ALS()
 //      .setSeed(Random.nextLong())
       .setSeed(555)
-//      .setImplicitPrefs(true)
-//      .setRank(10)
+      .setImplicitPrefs(true)
+      .setRank(10)
       .setRegParam(0.01)
-//      .setAlpha(1.0)
+      .setAlpha(1.0)
       .setMaxIter(5)
       .setUserCol("userId")
       .setItemCol("movieId")
@@ -115,26 +113,9 @@ object Netflix {
 ////      .setRatingCol("rating")
 ////    val model = als.fit(training)
 ////    model.setColdStartStrategy("drop")
-//
-//
+
     val predictions = model.transform(test)
     predictions.show(200, false)
-
-
-//
-//    val trainPredictionsAndLabels =
-//      model.transform(training).select("rating",
-//        "prediction").map { case Row(rating: Double, prediction: Double) => (rating,
-//        prediction) }(null).rdd
-//
-//
-//    val regressionMetrics = new RegressionMetrics(trainPredictionsAndLabels)
-//    println(s"ExplainedVariance = ${regressionMetrics.explainedVariance}")
-//    println(s"MeanAbsoluteError = ${regressionMetrics.meanAbsoluteError}")
-//    println(s"MeanSquaredError = ${regressionMetrics.meanSquaredError}")
-//    println(s"RootMeanSquaredError = ${regressionMetrics.rootMeanSquaredError}")
-//    println(s"R-squared = ${regressionMetrics.r2}")
-
 
 
     // evaluation
@@ -155,15 +136,16 @@ object Netflix {
     val mse = evaluatorMSE.evaluate(predictions)
     val r2 = evaluatorR2.evaluate(predictions)
 
-    println(s"Root-mean-square error = $rmse" + evaluatorRMSE.isLargerBetter)
-    println(s"Mean-square error = $mse")
-    println(s"Unadjusted coefficient of determination = $r2")
+    println(s"Root-mean-square error = $rmse" + ", is larger better? " + evaluatorRMSE.isLargerBetter)
+    println(s"Mean-square error = $mse" + ", is larger better? " + evaluatorMSE.isLargerBetter)
+    println(s"Unadjusted coefficient of determination = $r2" + ", is larger better? " + evaluatorR2.isLargerBetter)
 
 
 
     // SLOW !!!
 //    val userRecs = model.recommendForAllUsers(10)
 //    val movieRecs = model.recommendForAllItems(10)
+
 
 
     // Generate top 10 movie recommendations for a specified set of users
@@ -179,11 +161,12 @@ object Netflix {
     movieSubSetRecs.show(false)
 
 
+
     val minuteFormat = new SimpleDateFormat("mm")
     println("Start time: " + start)
     val end = Calendar.getInstance().getTime()
     println("End time:  " + end)
-    println ("Difference in minutes: " + (minuteFormat.format(start).toInt - minuteFormat.format(end).toInt))
+    println ("Difference in minutes: " + (minuteFormat.format(end).toInt - minuteFormat.format(start).toInt))
 
     spark.stop()
 
