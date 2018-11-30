@@ -1,7 +1,7 @@
 
-import java.util
-
-import org.apache.spark.sql.{Row, SaveMode, SparkSession}
+import org.apache.spark.ml.evaluation.RegressionEvaluator
+import org.apache.spark.ml.recommendation.ALS
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 
 object Netflix {
@@ -41,14 +41,49 @@ object Netflix {
     val combinedTitleRatingUser = fourElementsDF
       .join(movieIdTitles, usingColumn = "movieId")
 
-    import spark.implicits._
+//    combinedTitleRatingUser.createOrReplaceTempView("netflix")
+//    spark.sql("SELECT title, AVG(rating) AS score FROM netflix GROUP BY title ORDER BY score DESC").show(40, false)
 
-    combinedTitleRatingUser
-//      .select(combinedTitleRatingUser.col("*"))
-      .select($"movieId", $"title").distinct()
-      .filter("year = 1979")
-      .show(3000, false)
+    val Array(training, test) = combinedTitleRatingUser.randomSplit(Array(0.8, 0.2))
 
+
+    val als = new ALS()
+      .setMaxIter(5)
+      .setRegParam(0.01)
+      .setUserCol("userId")
+      .setItemCol("movieId")
+      .setRatingCol("rating")
+    val model = als.fit(training)
+
+    model.setColdStartStrategy("drop")
+
+    val predictions = model.transform(test)
+
+    val evaluator = new RegressionEvaluator()
+      .setMetricName("rmse")
+      .setLabelCol("rating")
+      .setPredictionCol("prediction")
+    val rmse = evaluator.evaluate(predictions)
+    println(s"Root-mean-square error = $rmse")
+
+    val userRecs = model.recommendForAllUsers(10)
+    // Generate top 10 user recommendations for each movie
+    val movieRecs = model.recommendForAllItems(10)
+
+    // Generate top 10 movie recommendations for a specified set of users
+    val users = combinedTitleRatingUser.select(als.getUserCol).distinct().limit(3)
+    val userSubsetRecs = model.recommendForUserSubset(users, 10)
+    // Generate top 10 user recommendations for a specified set of movies
+    val movies = combinedTitleRatingUser.select(als.getItemCol).distinct().limit(3)
+    val movieSubSetRecs = model.recommendForItemSubset(movies, 10)
+
+    userRecs.show()
+    movieRecs.show()
+    userSubsetRecs.show()
+    movieSubSetRecs.show()
+
+
+    spark.stop()
 
   }
 
