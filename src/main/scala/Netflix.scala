@@ -15,7 +15,7 @@ object Netflix {
       .appName("Netflix Recommendation System")
       .getOrCreate;
 
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("WARN")
 
     val fourElementsSchema = new StructType()
       .add(StructField("movieId", LongType, true))
@@ -36,7 +36,7 @@ object Netflix {
       .add(StructField("title", StringType, true))
 
     val movieIdTitles = spark.read
-      .option("header", "true")
+      .option("header", "false")
       .schema(movieIdTitleSchema)
       .csv("netflix-data/movie_titles.txt")
 
@@ -45,26 +45,38 @@ object Netflix {
     val combinedTitleRatingUser = fourElementsDF
       .join(movieIdTitles, usingColumn = "movieId")
 
+//    combinedTitleRatingUser.show()
+//    combinedTitleRatingUser.describe()
+
 //    combinedTitleRatingUser.createOrReplaceTempView("netflix")
 //    spark.sql("SELECT title, AVG(rating) AS score FROM netflix GROUP BY title ORDER BY score DESC").show(40, false)
 
-    val Array(training, test) = combinedTitleRatingUser.randomSplit(Array(0.8, 0.2), 1234)
+    val Array(combinedTitleRatingUser2, dropping) = combinedTitleRatingUser.randomSplit(Array(0.001, 0.999), 125)
 
-    training.cache()
-    test.cache()
+    val Array(training, test) = combinedTitleRatingUser2.randomSplit(Array(0.8, 0.2), 8674234)
 
-    val model = new ALS().
-      setSeed(Random.nextLong()).
-      setImplicitPrefs(true).
-      setRank(10).
-      setRegParam(0.01).
-      setAlpha(1.0).
-      setMaxIter(5).
-      setUserCol("userId").
-      setItemCol("movieId").
-      setRatingCol("rating").
-      setPredictionCol("prediction").
-      fit(training)
+    //    training.cache()
+    //    test.cache()
+
+    //    println(training.count())
+    //    println(test.count())
+
+    //    training.describe()
+    //    test.describe()
+
+    val model = new ALS()
+//      .setSeed(Random.nextLong())
+      .setSeed(555)
+//      .setImplicitPrefs(true)
+//      .setRank(10)
+      .setRegParam(0.01)
+//      .setAlpha(1.0)
+      .setMaxIter(5)
+      .setUserCol("userId")
+      .setItemCol("movieId")
+      .setRatingCol("rating")
+      .setPredictionCol("prediction")
+      .fit(training)
       .setColdStartStrategy("drop")
 
 //    val als = new ALS()
@@ -76,6 +88,7 @@ object Netflix {
 //    val model = als.fit(training)
 //    model.setColdStartStrategy("drop")
 
+
     val predictions = model.transform(test)
 
     val evaluator = new RegressionEvaluator()
@@ -86,9 +99,9 @@ object Netflix {
 
     println(s"Root-mean-square error = $rmse")
 
-    val userRecs = model.recommendForAllUsers(10)
-    // Generate top 10 user recommendations for each movie
-    val movieRecs = model.recommendForAllItems(10)
+    // SLOW !!!
+//    val userRecs = model.recommendForAllUsers(10)
+//    val movieRecs = model.recommendForAllItems(10)
 
 
     // Generate top 10 movie recommendations for a specified set of users
@@ -98,9 +111,9 @@ object Netflix {
     val movies = combinedTitleRatingUser.select(model.getItemCol).distinct().limit(3)
     val movieSubSetRecs = model.recommendForItemSubset(movies, 10)
 
-    userRecs.show(false)
-    movieRecs.show(false)
+    users.show(false)
     userSubsetRecs.show(false)
+    movies.show(false)
     movieSubSetRecs.show(false)
 
 
