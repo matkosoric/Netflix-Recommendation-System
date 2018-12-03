@@ -3,7 +3,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
-import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.recommendation.ALS
@@ -58,7 +58,7 @@ object Netflix {
 
     // data set exploration
     combinedTitleRatingUser.createOrReplaceTempView("netflix")
-    spark.sql("SELECT DISTINCT (*) FROM netflix").show(40, false)
+    spark.sql("SELECT *, rand() as random FROM netflix order by random").show(40, false)
 
     val numberOfReviews = combinedTitleRatingUser.count()
     val numberOfUsers = combinedTitleRatingUser.select("userId").distinct().count()
@@ -69,7 +69,7 @@ object Netflix {
 
     println (s"In our complete dataset we have $numberOfReviews reviews, performed by $numberOfUsers users, on a collection of $numberOfMovies movies \n\n")
 
-    println("Top 50 movies by minimum, maxminum, and average score, and number of reviews")
+    println("Top 20 movies by minimum, maxminum, and average score, and number of reviews")
     spark.sql("SELECT " +
                               "title, " +
                               "MIN(rating) AS minScore, " +
@@ -78,10 +78,10 @@ object Netflix {
                               "count(1) AS numReviews " +
                       "FROM netflix " +
                       "GROUP BY title " +
-                      "ORDER BY averageScore DESC").show(50, false)
+                      "ORDER BY averageScore DESC").show(20, false)
 
-    println("Top 100 movies with the lowest number of reviews:")
-    spark.sql ("SELECT title, count(1) AS numReviews FROM netflix GROUP BY title ORDER BY numReviews ASC").show(100, false)
+    println("20 lowest ranked movies: ")
+    spark.sql ("SELECT title, count(1) AS numReviews FROM netflix GROUP BY title ORDER BY numReviews ASC").show(20, false)
 
 //    0.01‰ subdataset for speed
     val Array(combinedTitleRatingUser2, dropping) = combinedTitleRatingUser.randomSplit(Array(0.0001, 0.9999), 235)
@@ -99,6 +99,8 @@ object Netflix {
 //    test.describe().show()
 //    training.describe().show()
 
+
+    // model definition
     val model = new ALS()
       .setSeed(555)
       .setImplicitPrefs(true)
@@ -114,7 +116,6 @@ object Netflix {
 //      .setColdStartStrategy("drop")
 
     println("\nModel parameters explanations: \n" + model.explainParams)
-
 
 //    val predictions = model.transform(test)
 //    predictions.show(30, false)
@@ -165,7 +166,13 @@ object Netflix {
 
     cv.fit(training).avgMetrics
 
-    val best_als = cv.fit(training).bestModel
+    val best_als = cv.fit(training).bestModel.asInstanceOf[PipelineModel]
+
+    best_als.save("exporting_model_" + System.nanoTime())
+
+//    best_als.transform(test)
+
+
 
 
 
