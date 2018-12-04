@@ -1,13 +1,21 @@
 # Netflix Recommendation System
 
-Netflix prize was an open competition for the best collaborative filtering algorithm. It was won by BellKor's Pragmatic Chaos team in 2009.
-This is an attempt to produce similar results with Spark's built-in ALS algorithm.
+![Netflix logo - Matko Soric](https://raw.githubusercontent.com/matkosoric/Netflix-Recommendation-System/master/src/main/resources/images/netflix-logo.png?raw=true "Netflix logo - Matko Soric")
+
+
+Netflix prize was an open competition for the best collaborative filtering algorithm, started in 2006.
+It was won by BellKor's Pragmatic Chaos team from AT&T Labs in 2009.
+This Spark application will user Spark's built-in ALS algorithm to create a recommendation model for the data set from competition.
+
+Preprocessing1.scala will create four column dataframe (movieId, userId, rating, date) from the original data and write it to the intermediate folder.
+Preprocessing2.scala will use data from intermediate step and write it in a snappy compressed parquet format.
+
 
 [Netflix prize](https://en.wikipedia.org/wiki/Netflix_Prize)
 
 ### Dataset
 
-Netflix does not provides access to the original dataset, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repo:
+Netflix does not provides access to the original dataset, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repository:
 [Netflix Prize Data Set](https://web.archive.org/web/20090925184737/http://archive.ics.uci.edu/ml/datasets/Netflix+Prize)
 
 
@@ -18,6 +26,10 @@ Netflix does not provides access to the original dataset, probably due to the le
 
 
 ### Results
+
+![Training process - Matko Soric](https://raw.githubusercontent.com/matkosoric/Netflix-Recommendation-System/master/src/main/resources/images/training-screenshoot.png?raw=true "Training process - Matko Soric")
+
+
 
 <pre><code>
 +-------+-------+------+----------+----+-----------------+

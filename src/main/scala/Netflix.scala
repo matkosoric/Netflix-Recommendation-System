@@ -94,15 +94,18 @@ object Netflix {
 //    val Array(combinedTitleRatingUser2, dropping) = combinedTitleRatingUser.randomSplit(Array(0.0001, 0.9999), 235)
 //    val Array(training, test) = combinedTitleRatingUser2.randomSplit(Array(0.8, 0.2), 544)
 
-    // COMPLETE DATASET
-    val Array(training, test) = combinedTitleRatingUser.randomSplit(Array(0.8, 0.2), 73)
+    // COMPLETE DATA SET
+//    val Array(training, test) = combinedTitleRatingUser.randomSplit(Array(0.8, 0.2), 73)
+
+    // COMPLETE DATA SET FOR K-FOLD validation
+    val training = combinedTitleRatingUser.drop ("year", "title", "random")
 
 
     System.gc()
 
-    test.cache()
+    //    test.cache()
     training.cache()
-
+    training.printSchema()
 
 //    test.describe().show()
 //    training.describe().show()
@@ -121,7 +124,7 @@ object Netflix {
       .setItemCol("movieId")
       .setRatingCol("rating")
       .setPredictionCol("prediction")
-      .fit(training)
+//      .fit(training)
       .setColdStartStrategy("drop")
 
     println("\nModel parameters explanations: \n" + model.explainParams)
@@ -130,81 +133,81 @@ object Netflix {
 
 
     // evaluation
-
-    val predictions = model.transform(test)
-    predictions.show(30, false)
-
+//
+//    val predictions = model.transform(test)
+//    predictions.show(30, false)
+//
     val evaluatorRMSE = new RegressionEvaluator()
       .setMetricName("rmse")
       .setLabelCol("rating")
       .setPredictionCol("prediction")
-    val evaluatorMSE = new RegressionEvaluator()
-      .setMetricName("mse")
-      .setLabelCol("rating")
-      .setPredictionCol("prediction")
-    val evaluatorR2 = new RegressionEvaluator()
-      .setMetricName("r2")
-      .setLabelCol("rating")
-      .setPredictionCol("prediction")
-
-    val rmse = evaluatorRMSE.evaluate(predictions)
-    val mse = evaluatorMSE.evaluate(predictions)
-    val r2 = evaluatorR2.evaluate(predictions)
-    println(f"Root-mean-square error = $rmse%1.10f" + "                 Is larger better? " + evaluatorRMSE.isLargerBetter)
-    println(f"Mean-square error = $mse%1.10f" + "                       Is larger better? " + evaluatorMSE.isLargerBetter)
-    println(f"Unadjusted coefficient of determination = $r2%1.10f" + "  Is larger better? " + evaluatorR2.isLargerBetter)
-
-
-//    // k-fold validation
-//    val paramGrid = new ParamGridBuilder()
-//      .addGrid(model.implicitPrefs, Array(true, false))
-//      .addGrid(model.rank, Array(3, 10, 20))
-//      .addGrid(model.regParam, Array(0.001, 0.01, 0.1, 1))
-//      .addGrid(model.alpha, Array(0.5, 1.0, 2.0))
-//      .addGrid(model.maxIter, Array(5, 10, 20))
-//      .addGrid(model.nonnegative, Array(true, false))
-//      .build()
+//    val evaluatorMSE = new RegressionEvaluator()
+//      .setMetricName("mse")
+//      .setLabelCol("rating")
+//      .setPredictionCol("prediction")
+//    val evaluatorR2 = new RegressionEvaluator()
+//      .setMetricName("r2")
+//      .setLabelCol("rating")
+//      .setPredictionCol("prediction")
 //
+//    val rmse = evaluatorRMSE.evaluate(predictions)
+//    val mse = evaluatorMSE.evaluate(predictions)
+//    val r2 = evaluatorR2.evaluate(predictions)
+//    println(f"Root-mean-square error = $rmse%1.10f" + "                 Is larger better? " + evaluatorRMSE.isLargerBetter)
+//    println(f"Mean-square error = $mse%1.10f" + "                       Is larger better? " + evaluatorMSE.isLargerBetter)
+//    println(f"Unadjusted coefficient of determination = $r2%1.10f" + "  Is larger better? " + evaluatorR2.isLargerBetter)
+
+
+    // k-fold validation
+    val paramGrid = new ParamGridBuilder()
+      .addGrid(model.implicitPrefs, Array(true, false))
+//      .addGrid(model.rank, Array(3, 4))
+//      .addGrid(model.alpha, Array(0.6, 1.0, 2.0))
+//      .addGrid(model.maxIter, Array(10, 20))
+      .build()
+
+
+    val pipeline = new Pipeline()
+      .setStages(Array(model))
+
+    val cv = new CrossValidator()
+      .setEstimator(pipeline)
+      .setEvaluator(evaluatorRMSE)
+      .setEstimatorParamMaps(paramGrid)
+      .setNumFolds(10)
+//      .setParallelism(2)
+
+    cv.fit(training).avgMetrics
+
+    val best_als = cv.fit(training).bestModel.asInstanceOf[PipelineModel]
+
+    best_als.write.overwrite().save("exporting_model_" + System.nanoTime())
+
+
+
+
+
+
+
+
+
+
+//    // concrete predictions
 //
-//    val pipeline = new Pipeline()
-//      .setStages(Array(model))
+//    // SLOW !!!
+////    val userRecs = model.recommendForAllUsers(10)
+////    val movieRecs = model.recommendForAllItems(10)
+//    // Generate top 10 movie recommendations for a specified set of users
+//    val users = combinedTitleRatingUser.select(model.getUserCol).distinct().limit(3)
+//    val userSubsetRecs = model.recommendForUserSubset(users, 10)
+//    // Generate top 10 user recommendations for a specified set of movies
+//    val movies = combinedTitleRatingUser.select(model.getItemCol).distinct().limit(3)
+//    val movieSubSetRecs = model.recommendForItemSubset(movies, 10)
 //
-//    val cv = new CrossValidator()
-//      .setEstimator(pipeline)
-//      .setEvaluator(evaluatorRMSE)
-////      .setEvaluator(evaluatorR2)
-//      .setEstimatorParamMaps(paramGrid)
-//      .setNumFolds(10)
-////      .setParallelism(2)
-//
-//    cv.fit(training).avgMetrics
-//
-//    val best_als = cv.fit(training).bestModel.asInstanceOf[PipelineModel]
-//
-//    best_als.save("exporting_model_" + System.nanoTime())
-
-
-
-
-
-
-
-    // concrete predictions
-
-    // SLOW !!!
-//    val userRecs = model.recommendForAllUsers(10)
-//    val movieRecs = model.recommendForAllItems(10)
-    // Generate top 10 movie recommendations for a specified set of users
-    val users = combinedTitleRatingUser.select(model.getUserCol).distinct().limit(3)
-    val userSubsetRecs = model.recommendForUserSubset(users, 10)
-    // Generate top 10 user recommendations for a specified set of movies
-    val movies = combinedTitleRatingUser.select(model.getItemCol).distinct().limit(3)
-    val movieSubSetRecs = model.recommendForItemSubset(movies, 10)
-
-    users.show(false)
-    userSubsetRecs.show(false)
-    movies.show(false)
-    movieSubSetRecs.show(false)
+//    users.show(false)
+//    userSubsetRecs.show(false)
+//    movies.show(false)
+//    movieSubSetRecs.show(false)
 
 
     // running time
@@ -221,5 +224,3 @@ object Netflix {
   }
 
 }
-
-//val zippedData = data.rdd.zipWithIndex()collect()
