@@ -1,5 +1,14 @@
 # Netflix Recommendation System
 
+Netflix prize was an open competition for the best collaborative filtering algorithm. It was won by BellKor's Pragmatic Chaos team in 2009.
+This is an attempt to produce similar results with Spark's built-in ALS algorithm.
+
+[Netflix prize](https://en.wikipedia.org/wiki/Netflix_Prize)
+
+### Dataset
+
+Netflix does not provides access to the original dataset, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repo:
+[Netflix Prize Data Set](https://web.archive.org/web/20090925184737/http://archive.ics.uci.edu/ml/datasets/Netflix+Prize)
 
 
 ### Tools
