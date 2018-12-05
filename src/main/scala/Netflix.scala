@@ -1,16 +1,13 @@
 
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
-import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.recommendation.ALS
+import org.apache.spark.ml.recommendation.{ALS, ALSModel}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.functions._
 
 
 object Netflix {
@@ -57,39 +54,6 @@ object Netflix {
     val combinedTitleRatingUser = fourElementsDF
       .join(movieIdTitles, usingColumn = "movieId")
 
-
-
-
-    // data set exploration
-
-    combinedTitleRatingUser.createOrReplaceTempView("netflix")
-    spark.sql("SELECT *, rand() as random FROM netflix order by random")
-      .show(40, false)
-
-    val numberOfReviews = combinedTitleRatingUser.count()
-    val numberOfUsers = combinedTitleRatingUser.select("userId").distinct().count()
-    val numberOfMovies = combinedTitleRatingUser.select("movieId").distinct().count()
-//        val numberOfReviews = spark.sql("SELECT COUNT (1) FROM netflix")
-//        val numberOfUsers = spark.sql("SELECT COUNT (DISTINCT userId) FROM netflix")
-//        val numberOfMovies = spark.sql("SELECT COUNT (DISTINCT movieId) FROM netflix")
-
-    println (s"In our complete dataset we have $numberOfReviews reviews, performed by $numberOfUsers users, on a collection of $numberOfMovies movies \n\n")
-
-    println("Top 20 movies by average score, with minimum and maxminum score, and number of reviews")
-    spark.sql("SELECT " +
-                              "title, " +
-                              "MIN(rating) AS minScore, " +
-                              "MAX(rating) AS maxScore, " +
-                              "ROUND(AVG(rating), 3) AS averageScore, " +
-                              "count(1) AS numReviews " +
-                      "FROM netflix " +
-                      "GROUP BY title " +
-                      "ORDER BY averageScore DESC")
-      .show(20, false)
-
-    println("20 lowest ranked movies: ")
-    spark.sql ("SELECT title, count(1) AS numReviews FROM netflix GROUP BY title ORDER BY numReviews ASC").show(20, false)
-
 //    0.01‰ subdataset for speed
 //    val Array(combinedTitleRatingUser2, dropping) = combinedTitleRatingUser.randomSplit(Array(0.0001, 0.9999), 235)
 //    val Array(training, test) = combinedTitleRatingUser2.randomSplit(Array(0.8, 0.2), 544)
@@ -99,7 +63,6 @@ object Netflix {
 
     // COMPLETE DATA SET FOR K-FOLD validation
     val training = combinedTitleRatingUser.drop ("year", "title", "random")
-
 
     System.gc()
 
@@ -111,14 +74,8 @@ object Netflix {
 //    training.describe().show()
 
 
-    // model definition
-    val model = new ALS()
+    val alsModel = new ALS()
       .setSeed(555)
-//      .setImplicitPrefs(true)
-//      .setRank(10)
-//      .setRegParam(0.01)
-//      .setAlpha(1.0)
-//      .setMaxIter(10)
       .setCheckpointInterval(5)
       .setUserCol("userId")
       .setItemCol("movieId")
@@ -127,7 +84,7 @@ object Netflix {
 //      .fit(training)
       .setColdStartStrategy("drop")
 
-    println("\nModel parameters explanations: \n" + model.explainParams)
+    println("\nModel parameters explanations: \n" + alsModel.explainParams)
 
 
 
@@ -160,58 +117,42 @@ object Netflix {
 
     // k-fold validation
     val paramGrid = new ParamGridBuilder()
-      .addGrid(model.implicitPrefs, Array(true, false))
-//      .addGrid(model.rank, Array(3, 4))
-//      .addGrid(model.alpha, Array(0.6, 1.0, 2.0))
-//      .addGrid(model.maxIter, Array(10, 20))
+      .addGrid(alsModel.implicitPrefs, Array(true, false))
+      .addGrid(alsModel.rank, Array(3, 4))
+      .addGrid(alsModel.alpha, Array(0.6, 1.0, 2.0))
+      .addGrid(alsModel.maxIter, Array(10, 15, 20))
       .build()
 
 
-    val pipeline = new Pipeline()
-      .setStages(Array(model))
+//    val pipeline = new Pipeline()
+//      .setStages(Array(model))
 
     val cv = new CrossValidator()
-      .setEstimator(pipeline)
+      .setEstimator(alsModel)
       .setEvaluator(evaluatorRMSE)
       .setEstimatorParamMaps(paramGrid)
-      .setNumFolds(10)
+      .setNumFolds(3)
 //      .setParallelism(2)
 
-    cv.fit(training).avgMetrics
 
-    val best_als = cv.fit(training).bestModel.asInstanceOf[PipelineModel]
-
-    best_als.write.overwrite().save("exporting_model_" + System.nanoTime())
+    val best_als : ALSModel = cv.fit(training).bestModel.asInstanceOf[ALSModel]
 
 
+    best_als.write.overwrite().save("exporting_model_ALS_6_12" + System.nanoTime())
+    best_als.save("exporting_model_ALS_backup_6_12" + System.nanoTime())
 
 
-
-
+    println(best_als.parent.extractParamMap())
 
 
 
 
-//    // concrete predictions
-//
-//    // SLOW !!!
-////    val userRecs = model.recommendForAllUsers(10)
-////    val movieRecs = model.recommendForAllItems(10)
-//    // Generate top 10 movie recommendations for a specified set of users
-//    val users = combinedTitleRatingUser.select(model.getUserCol).distinct().limit(3)
-//    val userSubsetRecs = model.recommendForUserSubset(users, 10)
-//    // Generate top 10 user recommendations for a specified set of movies
-//    val movies = combinedTitleRatingUser.select(model.getItemCol).distinct().limit(3)
-//    val movieSubSetRecs = model.recommendForItemSubset(movies, 10)
-//
-//    users.show(false)
-//    userSubsetRecs.show(false)
-//    movies.show(false)
-//    movieSubSetRecs.show(false)
 
 
-    // running time
-//    val minuteFormat = new SimpleDateFormat("mm")
+
+
+
+    // time metrics
     println("Start time: " + startHumanReadable)
     val endNano = System.nanoTime()
     val endHumanReadable = Calendar.getInstance().getTime()

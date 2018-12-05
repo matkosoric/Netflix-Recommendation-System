@@ -56,11 +56,12 @@ object ProbeParsing {
 //              val logs = spark.sparkContext.parallelize(Seq(contentArray(i).substring(0, (contentArray(i).length() - 1)) + ", " + contentArray(i2))).toDF()
 //                        logs.write.mode(SaveMode.Append).text("src/main/resources/data/probe" + System.nanoTime())
 
-              println("Processing line: " + i2)
             } else break
             i2 += 1
           }
         }
+
+        println("Processing line: " + i)
 
         // flush data
           finalDF
@@ -68,8 +69,11 @@ object ProbeParsing {
             .write.mode(SaveMode.Append)
             .text("src/main/resources/data/probe")
 
-        }
-     }
+      }
+
+      System.gc()
+
+    }
 
 
     // time metrics
