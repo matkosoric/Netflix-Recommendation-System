@@ -10,6 +10,10 @@ object Preprocessing1 {
       .master("local")
       .appName("Netflix Recommendation System - Preprocessing 1")
       .getOrCreate;
+
+    spark.sparkContext.setLogLevel("WARN")   // WARN, INFO, DEBUG
+
+
     import spark.implicits._
 
     val fs = FileSystem.get (new Configuration())
