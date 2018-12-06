@@ -12,12 +12,11 @@ object QualifyingParser {
     val lines = Source.fromFile("netflix-data/qualifying.txt")
     .getLines()
       .buffered
-//      .take(2000)
+      .take(2834601)
       .toList
 
     val bw = new BufferedWriter(new FileWriter("src/main/resources/qualifying.csv"))
 
-    val batch = BufferedInputStream
 
     for (i <- 0 to lines.length -1 ) {
 
@@ -31,7 +30,9 @@ object QualifyingParser {
 
               val newRow = lines(i).substring(0, (lines(i).length() - 1)) + ", " + lines(i2)
 
-              bw.write("\r\n")
+              bw.write(newRow + "\r\n")
+
+
 //              bw.print(newRow)
 //              bw.print("\r\n")
 
