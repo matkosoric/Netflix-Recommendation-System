@@ -16,6 +16,8 @@ object Exploring {
     spark.sparkContext.setLogLevel("WARN") // WARN, INFO, DEBUG
     spark.sparkContext.setCheckpointDir("spark-checkpoint")
 
+
+    // loading data
     val fourElementsSchema = new StructType()
       .add(StructField("movieId", LongType, true))
       .add(StructField("userId", LongType, true))
@@ -40,38 +42,80 @@ object Exploring {
     val combinedTitleRatingUser = fourElementsDF
       .join(movieIdTitles, usingColumn = "movieId")
 
+    val probeSchema = new StructType()
+      .add(StructField("movieId", LongType, true))
+      .add(StructField("userId", LongType, true))
+
+    val probeDF = spark.read
+      .option("header", "false")
+      .schema(probeSchema)
+      .csv("src/main/resources/probe.csv")
+
+    val qualifyingSchema = new StructType()
+      .add(StructField("movieId", LongType, true))
+      .add(StructField("userId", LongType, true))
+      .add(StructField("date", DateType, true))
+
+    val qualifyingDF = spark.read
+      .option("header", "false")
+      .schema(qualifyingSchema)
+      .csv("src/main/resources/qualifying.csv")
+
 
 
     // data set exploration
 
-    combinedTitleRatingUser.createOrReplaceTempView("netflix")
-    spark.sql("SELECT *, rand() as random FROM netflix order by random")
-      .show(40, false)
+    combinedTitleRatingUser.createOrReplaceTempView("training")
+    probeDF.createOrReplaceGlobalTempView("probe")
+    qualifyingDF.createOrReplaceGlobalTempView("qualifying")
+
+
+    println("Sample data: ")
+    spark.sql("SELECT *, rand() as random FROM training order by random").drop("random").show(40, false)
 
     val numberOfReviews = combinedTitleRatingUser.count()
     val numberOfUsers = combinedTitleRatingUser.select("userId").distinct().count()
     val numberOfMovies = combinedTitleRatingUser.select("movieId").distinct().count()
-    //        val numberOfReviews = spark.sql("SELECT COUNT (1) FROM netflix")
-    //        val numberOfUsers = spark.sql("SELECT COUNT (DISTINCT userId) FROM netflix")
-    //        val numberOfMovies = spark.sql("SELECT COUNT (DISTINCT movieId) FROM netflix")
 
-    println(s"In our complete dataset we have $numberOfReviews reviews, performed by $numberOfUsers users, on a collection of $numberOfMovies movies \n\n")
+    println(s"In our complete data set we have $numberOfReviews reviews, performed by $numberOfUsers users, on a collection of $numberOfMovies movies. \n")
 
-    println("Top 20 movies by average score, with minimum and maxminum score, and number of reviews")
+    println("Standard data set statistics:")
+//    combinedTitleRatingUser.describe().show()
+
+
+    println("Top 20 movies by average score, with minimum and maximum score, and number of reviews:")
     spark.sql("SELECT " +
       "title, " +
       "MIN(rating) AS minScore, " +
       "MAX(rating) AS maxScore, " +
       "ROUND(AVG(rating), 3) AS averageScore, " +
       "count(1) AS numReviews " +
-      "FROM netflix " +
+      "FROM training " +
       "GROUP BY title " +
       "ORDER BY averageScore DESC")
       .show(20, false)
 
-    println("20 lowest ranked movies: ")
-    spark.sql("SELECT title, count(1) AS numReviews FROM netflix GROUP BY title ORDER BY numReviews ASC").show(20, false)
+    println("Twenty movies the the smallest number of reviews: ")
+    spark.sql("SELECT title, count(1) AS numReviews FROM training GROUP BY title ORDER BY numReviews ASC").show(20, false)
 
+
+    println("Five users with the smallest number of ratings:")
+    spark.sql("SELECT userId, count(1) AS numberOfReviews FROM training GROUP BY userId ORDER BY numberOfReviews ASC LIMIT 5").show(20, false)
+
+    println("Five users with the largest number of ratings:")
+    spark.sql("SELECT userId, count(1) AS numberOfReviews FROM training GROUP BY userId ORDER BY numberOfReviews DESC LIMIT 5").show(20, false)
+
+
+    println("Probe data set sample:")
+    probeDF.distinct().show(15)
+
+    println("Qualifying data set sample:")
+    qualifyingDF.distinct().show(15)
+
+
+
+
+//    spark.sql ("SELECT * FROM  training WHERE movieId = 1 and userId = 1046323").show(20, false)
 
   }
 

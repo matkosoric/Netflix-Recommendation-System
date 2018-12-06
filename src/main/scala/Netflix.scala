@@ -30,6 +30,8 @@ object Netflix {
     spark.sparkContext.setLogLevel("WARN")   // WARN, INFO, DEBUG
     spark.sparkContext.setCheckpointDir("spark-checkpoint")
 
+
+    // loading data
     val fourElementsSchema = new StructType()
       .add(StructField("movieId", LongType, true))
       .add(StructField("userId", LongType, true))
@@ -54,24 +56,11 @@ object Netflix {
     val combinedTitleRatingUser = fourElementsDF
       .join(movieIdTitles, usingColumn = "movieId")
 
-//    0.01‰ subdataset for speed
-//    val Array(combinedTitleRatingUser2, dropping) = combinedTitleRatingUser.randomSplit(Array(0.0001, 0.9999), 235)
-//    val Array(training, test) = combinedTitleRatingUser2.randomSplit(Array(0.8, 0.2), 544)
 
-    // COMPLETE DATA SET
-//    val Array(training, test) = combinedTitleRatingUser.randomSplit(Array(0.8, 0.2), 73)
-
-    // COMPLETE DATA SET FOR K-FOLD validation
     val training = combinedTitleRatingUser.drop ("year", "title", "random")
-
     System.gc()
-
-    //    test.cache()
     training.cache()
     training.printSchema()
-
-//    test.describe().show()
-//    training.describe().show()
 
 
     val alsModel = new ALS()
@@ -81,7 +70,6 @@ object Netflix {
       .setItemCol("movieId")
       .setRatingCol("rating")
       .setPredictionCol("prediction")
-//      .fit(training)
       .setColdStartStrategy("drop")
 
     println("\nModel parameters explanations: \n" + alsModel.explainParams)
@@ -90,10 +78,7 @@ object Netflix {
 
 
     // evaluation
-//
-//    val predictions = model.transform(test)
-//    predictions.show(30, false)
-//
+
     val evaluatorRMSE = new RegressionEvaluator()
       .setMetricName("rmse")
       .setLabelCol("rating")

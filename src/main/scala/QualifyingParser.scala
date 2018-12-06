@@ -22,7 +22,7 @@ object QualifyingParser {
             i2 += 1
           }
         }
-        println("Processing line: " + i)
+//        println("Processing line: " + i)
       }
     }
     bw.close()

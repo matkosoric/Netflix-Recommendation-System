@@ -1,6 +1,7 @@
 import org.apache.spark.ml.recommendation.ALSModel
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions.lit
 
 object Predicting {
 
@@ -42,15 +43,37 @@ object Predicting {
       .join(movieIdTitles, usingColumn = "movieId")
 
 
+    val probeSchema = new StructType()
+      .add(StructField("movieId", LongType, true))
+      .add(StructField("userId", LongType, true))
+
+    val probeDF = spark.read
+      .option("header", "false")
+      .schema(probeSchema)
+      .csv("src/main/resources/probe.csv")
+
+
+    val qualifyingSchema = new StructType()
+      .add(StructField("movieId", LongType, true))
+      .add(StructField("userId", LongType, true))
+      .add(StructField("date", DateType, true))
+
+    val qualifyingDF = spark.read
+      .option("header", "false")
+      .schema(qualifyingSchema)
+      .csv("src/main/resources/qualifying.csv")
+
+
+
+
+
+    probeDF.show(20)
+    qualifyingDF.show(20)
 
     // load model
-    val theBestModel: ALSModel = ALSModel.load("exporting_model_ALS88318470795857")
+//    val theBestModel: ALSModel = ALSModel.load("exporting_model_ALS_backup_6_12111123848888991")
 
-    println(theBestModel.extractParamMap())
-
-        val users = combinedTitleRatingUser.select(theBestModel.getUserCol).distinct().limit(3)
-        val userSubsetRecs = theBestModel.recommendForUserSubset(users, 10)
-        userSubsetRecs.show(false)
+//    println(theBestModel.extractParamMap())
 
 
 
