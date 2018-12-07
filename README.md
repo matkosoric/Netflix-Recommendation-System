@@ -4,18 +4,28 @@
 
 
 Netflix prize was an open competition for the best collaborative filtering algorithm, which started in 2006.
-It was won by BellKor's Pragmatic Chaos team from AT&T Labs won the prize back in 2009.
-This Spark application will user Spark's built-in ALS algorithm to create a recommendation model for the data set from the competition.
+BellKor's Pragmatic Chaos team from AT&T Labs won the prize back in 2009.
+This Spark application will user Spark's 2.4 built-in ALS algorithm to create a recommendation model for the data set from the competition.
 
 Preprocessing1.scala will create a four-column dataframe (movieId, userId, rating, date) from the original data and write it to the intermediate folder.
 Preprocessing2.scala will use data from the intermediate step and write it in a snappy compressed parquet format.
+Exploring.scala prints some sample data and general info about used data.
+ProbeParser.scala and QualifyingParser.scala are scripts for transforming original logs to Spark-friendly csv tabular structure.
+Predicting.scala loads trained ALS model, calculates predicted values on the data from original probe.txt
 
+Trained model is located under /src/main/resources/model. It's RMSE is 0.8904.
+I withheld preprocessed data from the intermediate steps in accordance with Netflix'x official instruction not to redistribute the data.
 
-[Netflix prize](https://en.wikipedia.org/wiki/Netflix_Prize)
+[Netflix prize - Official page](https://www.netflixprize.com/)
+
+[Netflix prize - Wiki](https://en.wikipedia.org/wiki/Netflix_Prize)
+
+[Netflix Prize - Slides](http://courses.washington.edu/css581/lecture_slides/09a_Netflix_Prize.pdf)
+
 
 ### Dataset
 
-Netflix does not provides access to the original dataset, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repository:
+Netflix does not provides access to the original data set, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repository:
 [Netflix Prize Data Set](https://web.archive.org/web/20090925184737/http://archive.ics.uci.edu/ml/datasets/Netflix+Prize)
 
 
@@ -24,15 +34,16 @@ Netflix does not provides access to the original dataset, probably due to the le
 [Spark 2.4.0 MLlib](https://spark.apache.org/docs/latest/ml-guide.html)
 
 
-
 ### Results
+
+###### RMSE =  0.8904
 
 Cores during the training process
 ![Training process - Matko Soric](https://raw.githubusercontent.com/matkosoric/Netflix-Recommendation-System/master/src/main/resources/images/training-screenshoot.png?raw=true "Training process - Matko Soric")
 
 Model parameters:
 
-{
+
 	als_5c1c03ac0dc9-alpha: 0.6,
 	als_5c1c03ac0dc9-checkpointInterval: 5,
 	als_5c1c03ac0dc9-coldStartStrategy: drop,
@@ -50,7 +61,7 @@ Model parameters:
 	als_5c1c03ac0dc9-regParam: 0.1,
 	als_5c1c03ac0dc9-seed: 555,
 	als_5c1c03ac0dc9-userCol: userId
-}
+
 
 Data exploration output:
 
@@ -142,7 +153,7 @@ Top 20 movies by average score, with minimum and maximum score, and number of re
 +---------------------------------------------------------------------------+--------+--------+------------+----------+
 only showing top 20 rows
 
-Twenty movies the the smallest number of reviews: 
+Twenty movies with the smallest number of reviews: 
 +--------------------------------------------------+----------+
 |title                                             |numReviews|
 +--------------------------------------------------+----------+
@@ -190,5 +201,49 @@ Five users with the largest number of ratings:
 |1664010|15813          |
 |2118461|14831          |
 +-------+---------------+
+
+Probe data set sample:
++-------+-------+
+|movieId| userId|
++-------+-------+
+|      1|1027056|
+|  10001|2350428|
+|  10024|2027932|
+|  10036|2344026|
+|   1004| 184574|
+|  10042|1648015|
+|  10042|1019149|
+|  10042| 247386|
+|  10044|2604177|
+|  10044| 386568|
+|  10053|2593690|
+|  10064|  66853|
+|   1008|2276942|
+|  10080|1177965|
+|  10080| 156747|
++-------+-------+
+only showing top 15 rows
+
+Qualifying data set sample:
++-------+-------+----------+
+|movieId| userId|      date|
++-------+-------+----------+
+|   1000|2246603|2005-05-15|
+|   1001| 865955|2005-10-13|
+|   1001|2260753|2005-12-14|
+|  10010| 684951|2005-12-12|
+|  10010|2075868|2005-11-01|
+|  10019| 271472|2004-10-24|
+|  10020|1436995|2005-06-26|
+|  10022|2646684|2005-11-21|
+|  10034|1884816|2005-04-01|
+|  10036|2193771|2005-12-06|
+|  10036|2132394|2005-10-28|
+|  10042| 965634|2005-11-15|
+|  10042|1485736|2005-11-20|
+|  10042| 187484|2005-12-11|
+|  10042|1166633|2005-11-26|
++-------+-------+----------+
+only showing top 15 rows
 
 </code></pre>
