@@ -80,8 +80,7 @@ object Exploring {
     println(s"In our complete data set we have $numberOfReviews reviews, performed by $numberOfUsers users, on a collection of $numberOfMovies movies. \n")
 
     println("Standard data set statistics:")
-//    combinedTitleRatingUser.describe().show()
-
+    combinedTitleRatingUser.describe().show()
 
     println("Top 20 movies by average score, with minimum and maximum score, and number of reviews:")
     spark.sql("SELECT " +
@@ -111,11 +110,6 @@ object Exploring {
 
     println("Qualifying data set sample:")
     qualifyingDF.distinct().show(15)
-
-
-
-
-//    spark.sql ("SELECT * FROM  training WHERE movieId = 1 and userId = 1046323").show(20, false)
 
   }
 
