@@ -3,6 +3,10 @@ import java.io._
 import scala.collection.mutable.ArrayBuffer
 import scala.util.control.Breaks._
 
+/*
+ * Created by © Matko Soric.
+ */
+
 object ProbeParser {
 
   def main(args: Array[String]): Unit = {

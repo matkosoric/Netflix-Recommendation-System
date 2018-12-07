@@ -3,6 +3,10 @@ import org.apache.spark.ml.recommendation.ALSModel
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 
+/*
+ * Created by © Matko Soric.
+ */
+
 object Predicting {
 
   def main(args: Array[String]): Unit = {
@@ -96,7 +100,7 @@ object Predicting {
 
     // probe predictions
     val probePredictions = theBestModel.transform(probeTrainingSubset)
-    probePredictions.show(50)
+    probePredictions.distinct().show(40, false)
     val rmse = evaluatorRMSE.evaluate(probePredictions )
     println(f"Root-mean-square error = $rmse%1.4f" + "                 Is larger better? " + evaluatorRMSE.isLargerBetter)
 

@@ -8,6 +8,9 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 
+/*
+ * Created by © Matko Soric.
+ */
 
 object Training {
 

@@ -3,6 +3,10 @@ import java.io._
 import scala.collection.mutable.ArrayBuffer
 import scala.util.control.Breaks.{break, breakable}
 
+/*
+ * Created by © Matko Soric.
+ */
+
 object QualifyingParser {
 
   def main(args: Array[String]): Unit = {

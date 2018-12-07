@@ -2,6 +2,10 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{SaveMode, SparkSession}
 
+/*
+ * Created by © Matko Soric.
+ */
+
 object Preprocessing1 {
 
   def main(args: Array[String]): Unit = {

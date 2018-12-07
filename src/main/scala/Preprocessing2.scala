@@ -1,6 +1,10 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DateType, LongType, StructField, StructType}
 
+/*
+ * Created by © Matko Soric.
+ */
+
 object Preprocessing2 {
 
   def main(args: Array[String]): Unit = {
