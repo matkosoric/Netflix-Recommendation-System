@@ -1,7 +1,7 @@
+import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.recommendation.ALSModel
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.functions.lit
 
 object Predicting {
 
@@ -64,40 +64,41 @@ object Predicting {
       .csv("src/main/resources/qualifying.csv")
 
 
-
-
-
-    probeDF.show(20)
-    qualifyingDF.show(20)
-
     // load model
-//    val theBestModel: ALSModel = ALSModel.load("exporting_model_ALS_backup_6_12111123848888991")
-
-//    println(theBestModel.extractParamMap())
+    val theBestModel: ALSModel = ALSModel.load("src/main/resources/model")
 
 
+    combinedTitleRatingUser.cache()
 
-    // load qualifying data set
+    combinedTitleRatingUser.createOrReplaceTempView("trainingData")
+    probeDF.createOrReplaceTempView("probe")
+    qualifyingDF.createOrReplaceTempView("qualifying")
+
+    println("probe count:" + probeDF.count())
+    println("qualifying count:" + qualifyingDF.count())
+    println("training data count: " + combinedTitleRatingUser.count())
+
+    val probeTrainingSubset = spark.sql("SELECT * FROM trainingData LEFT SEMI JOIN probe ON (trainingData.movieId = probe.movieId " +
+                                                                                              " AND trainingData.userId = probe.userId )")
+    println("probe subset count: " + probeTrainingSubset.count())
+    import spark.sqlContext.implicits._
+    probeTrainingSubset.printSchema()
+    probeTrainingSubset.sort($"movieId".asc, $"userId".desc).show(100)
+    probeDF.sort($"movieId".asc, $"userId".desc).show(100)
 
 
+    // evaluation
 
-    //    // concrete predictions
-    //
-    //    // SLOW !!!
-    ////    val userRecs = model.recommendForAllUsers(10)
-    ////    val movieRecs = model.recommendForAllItems(10)
-    //    // Generate top 10 movie recommendations for a specified set of users
-    //    val users = combinedTitleRatingUser.select(model.getUserCol).distinct().limit(3)
-    //    val userSubsetRecs = model.recommendForUserSubset(users, 10)
-    //    // Generate top 10 user recommendations for a specified set of movies
-    //    val movies = combinedTitleRatingUser.select(model.getItemCol).distinct().limit(3)
-    //    val movieSubSetRecs = model.recommendForItemSubset(movies, 10)
-    //
-    //    users.show(false)
-    //    userSubsetRecs.show(false)
-    //    movies.show(false)
-    //    movieSubSetRecs.show(false)
+    val evaluatorRMSE = new RegressionEvaluator()
+      .setMetricName("rmse")
+      .setLabelCol("rating")
+      .setPredictionCol("prediction")
 
+    // probe predictions
+    val probePredictions = theBestModel.transform(probeTrainingSubset)
+    probePredictions.show(50)
+    val rmse = evaluatorRMSE.evaluate(probePredictions )
+    println(f"Root-mean-square error = $rmse%1.4f" + "                 Is larger better? " + evaluatorRMSE.isLargerBetter)
 
   }
 

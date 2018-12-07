@@ -11,10 +11,13 @@ Preprocessing1.scala will create a four-column dataframe (movieId, userId, ratin
 Preprocessing2.scala will use data from the intermediate step and write it in a snappy compressed parquet format.
 Exploring.scala prints some sample data and general info about used data.
 ProbeParser.scala and QualifyingParser.scala are scripts for transforming original logs to Spark-friendly csv tabular structure.
-Predicting.scala loads trained ALS model, calculates predicted values on the data from original probe.txt
+Training.scala will fit ALS model to the training set using k-fold validation and a hyper-parameter grid with 64 different values.
+Predicting.scala loads trained ALS model, calculates predicted values on the data from the original probe.txt and evaluates model's RMSE.
 
-Trained model is located under /src/main/resources/model. It's RMSE is 0.8904.
-I withheld preprocessed data from the intermediate steps in accordance with Netflix'x official instruction not to redistribute the data.
+Trained ALS model is located under /src/main/resources/model. It's RMSE is 0.8904.
+I withheld preprocessed data from the intermediate steps in accordance with Netflix's official instruction not to redistribute the data.
+
+Next steps would be to use model on qualifying data set, or to enrich data with additional features, like genre.
 
 [Netflix prize - Official page](https://www.netflixprize.com/)
 
@@ -25,7 +28,7 @@ I withheld preprocessed data from the intermediate steps in accordance with Netf
 
 ### Dataset
 
-Netflix does not provides access to the original data set, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repository:
+Netflix does not provide access to the original data set, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repository:
 [Netflix Prize Data Set](https://web.archive.org/web/20090925184737/http://archive.ics.uci.edu/ml/datasets/Netflix+Prize)
 
 
@@ -36,7 +39,7 @@ Netflix does not provides access to the original data set, probably due to the l
 
 ### Results
 
-###### RMSE =  0.8904
+##### RMSE =  0.8904
 
 Cores during the training process
 ![Training process - Matko Soric](https://raw.githubusercontent.com/matkosoric/Netflix-Recommendation-System/master/src/main/resources/images/training-screenshoot.png?raw=true "Training process - Matko Soric")

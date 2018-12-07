@@ -74,7 +74,6 @@ object Training {
     println("\nModel parameters explanations: \n" + alsModel.explainParams)
 
 
-
     // evaluation
 
     val evaluatorRMSE = new RegressionEvaluator()
@@ -99,10 +98,8 @@ object Training {
     val best_als : ALSModel = cv.fit(training).bestModel.asInstanceOf[ALSModel]
 
     best_als.write.overwrite().save("exporting_model_ALS" + System.nanoTime())
-    best_als.save("exporting_model_ALS_backup" + System.nanoTime())
 
     println(best_als.parent.extractParamMap())
-
 
     // time metrics
     println("Start time: " + startHumanReadable)
