@@ -99,8 +99,9 @@ object Predicting {
       .setPredictionCol("prediction")
 
     // probe predictions
+    import org.apache.spark.sql.functions.rand
     val probePredictions = theBestModel.transform(probeTrainingSubset)
-    probePredictions.distinct().show(40, false)
+    probePredictions.orderBy(rand()).show(40, false)
     val rmse = evaluatorRMSE.evaluate(probePredictions )
     println(f"Root-mean-square error = $rmse%1.4f" + "                 Is larger better? " + evaluatorRMSE.isLargerBetter)
 

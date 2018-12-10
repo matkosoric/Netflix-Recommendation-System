@@ -5,7 +5,7 @@
 
 Netflix prize was an open competition for the best collaborative filtering algorithm, which started in 2006.
 BellKor's Pragmatic Chaos team from AT&T Labs won the prize back in 2009.
-This Spark application will user Spark's 2.4 built-in ALS algorithm to create a recommendation model for the data set from the competition.
+This Spark application will use Spark's 2.4 built-in ALS algorithm to create a recommendation model for the data set from the competition.
 
 Preprocessing1.scala will create a four-column dataframe (movieId, userId, rating, date) from the original data and write it to the intermediate folder.
 Preprocessing2.scala will use data from the intermediate step and write it in a snappy compressed parquet format.
@@ -16,8 +16,10 @@ Predicting.scala loads trained ALS model, calculates predicted values on the dat
 
 Trained ALS model is located under /src/main/resources/model. It's RMSE is 0.8904.
 I withheld preprocessed data from the intermediate steps in accordance with Netflix's official instruction not to redistribute the data.
+Training data set has slightly over 100 million instances. Probe data set has about 1.4 million records, while qualifying data set has about 2.8 million records.
+Uncompressed training data set is 2.6 GB.
 
-Next steps would be to use model on qualifying data set, or to enrich data with additional features, like genre.
+Next steps would be to use model on qualifying data set, to enrich data with additional features, like genre, or to use ensemble methods.
 
 [Netflix prize - Official page](https://www.netflixprize.com/)
 
@@ -249,51 +251,50 @@ Qualifying data set sample:
 +-------+-------+----------+
 only showing top 15 rows
 
-+-------+-------+------+----------+----+------------------------------+----------+
-|movieId|userId |rating|date      |year|title                         |prediction|
-+-------+-------+------+----------+----+------------------------------+----------+
-|1      |1027056|3     |2005-12-03|2003|Dinosaur Planet               |3.7297606 |
-|3      |1148318|4     |2004-11-29|1997|Character                     |4.393401  |
-|8      |2117067|5     |2005-11-08|2004|What the #$*! Do We Know!?    |3.2681036 |
-|8      |2629028|5     |2005-12-26|2004|What the #$*! Do We Know!?    |3.4664326 |
-|11     |2615605|2     |2005-12-23|1999|Full Frame: Documentary Shorts|3.2669764 |
-|17     |451827 |2     |2005-12-28|2005|7 Seconds                     |2.6999297 |
-|17     |2002136|3     |2005-10-22|2005|7 Seconds                     |3.0721776 |
-|18     |491066 |5     |2005-12-02|1994|Immortal Beloved              |3.939982  |
-|18     |1501608|4     |2005-11-09|1994|Immortal Beloved              |3.7334476 |
-|28     |1710041|4     |2005-02-13|2002|Lilo and Stitch               |3.6916113 |
-|28     |1880468|4     |2005-12-31|2002|Lilo and Stitch               |4.144219  |
-|28     |1974539|4     |2005-12-28|2002|Lilo and Stitch               |3.5790312 |
-|28     |1987695|4     |2005-09-01|2002|Lilo and Stitch               |3.3689344 |
-|28     |2028350|3     |2004-08-26|2002|Lilo and Stitch               |4.257824  |
-|28     |2499426|3     |2005-09-15|2002|Lilo and Stitch               |3.1333754 |
-|30     |69212  |4     |2005-11-27|2003|Something's Gotta Give        |4.1014843 |
-|30     |138733 |3     |2005-11-12|2003|Something's Gotta Give        |2.8050036 |
-|30     |646202 |4     |2005-09-08|2003|Something's Gotta Give        |4.0335736 |
-|30     |648214 |4     |2005-02-05|2003|Something's Gotta Give        |3.6525288 |
-|30     |839205 |4     |2005-03-05|2003|Something's Gotta Give        |3.1067724 |
-|30     |956887 |5     |2004-11-01|2003|Something's Gotta Give        |4.80021   |
-|30     |1332244|4     |2005-05-31|2003|Something's Gotta Give        |3.898171  |
-|30     |1359407|5     |2005-12-18|2003|Something's Gotta Give        |3.7634425 |
-|30     |1371690|4     |2005-10-25|2003|Something's Gotta Give        |3.8809943 |
-|30     |1716748|4     |2005-08-08|2003|Something's Gotta Give        |3.9752717 |
-|30     |1971250|5     |2005-08-28|2003|Something's Gotta Give        |3.4830403 |
-|30     |2165525|4     |2005-10-26|2003|Something's Gotta Give        |4.0227585 |
-|30     |2209225|3     |2005-09-17|2003|Something's Gotta Give        |2.7385604 |
-|30     |2209890|2     |2004-10-30|2003|Something's Gotta Give        |3.308076  |
-|30     |2230206|5     |2005-03-08|2003|Something's Gotta Give        |3.7086098 |
-|30     |2260825|4     |2004-07-22|2003|Something's Gotta Give        |4.2019987 |
-|30     |2405098|3     |2005-11-08|2003|Something's Gotta Give        |3.8531399 |
-|38     |1037555|1     |2004-05-24|2003|Daydream Obsession            |2.4396152 |
-|44     |9625   |3     |2005-06-08|1996|Spitfire Grill                |4.0473433 |
-|44     |26965  |1     |2005-12-01|1996|Spitfire Grill                |3.349677  |
-|44     |1508206|3     |2005-09-15|1996|Spitfire Grill                |4.2703776 |
-|46     |533295 |4     |2005-12-20|1964|Rudolph the Red-Nosed Reindeer|3.3534713 |
-|46     |2414331|5     |2005-12-05|1964|Rudolph the Red-Nosed Reindeer|4.1098204 |
-|52     |1060617|3     |2005-07-18|2002|The Weather Underground       |3.6908722 |
-|55     |984021 |4     |2005-07-10|1995|Jade                          |3.81435   |
-+-------+-------+------+----------+----+------------------------------+----------+
++-------+-------+------+----------+----+------------------------------------------------------+----------+
+|movieId|userId |rating|date      |year|title                                                 |prediction|
++-------+-------+------+----------+----+------------------------------------------------------+----------+
+|5924   |2014109|4     |2004-11-22|2000|Snatch                                                |4.2671514 |
+|2209   |74448  |1     |2005-07-09|1981|On Golden Pond                                        |3.3685462 |
+|16644  |1930976|5     |2005-12-09|2001|Winged Migration                                      |3.5348027 |
+|5318   |1731634|2     |2005-12-25|1995|Tommy Boy                                             |3.1187158 |
+|15844  |2056717|4     |2005-02-15|2000|Remember the Titans                                   |4.2853565 |
+|15886  |1126597|3     |2005-10-15|2002|Space Station: IMAX                                   |3.734653  |
+|607    |1810137|4     |2005-01-20|1994|Speed                                                 |3.7268028 |
+|2152   |2036305|5     |2005-09-25|2000|What Women Want                                       |3.1133265 |
+|17280  |2428731|4     |2005-09-25|1999|The Out-of-Towners                                    |3.7721572 |
+|1428   |965081 |4     |2005-07-26|2003|The Recruit                                           |3.6215656 |
+|13923  |1109812|4     |2005-12-30|2000|Cast Away                                             |3.5167656 |
+|6396   |1267184|5     |2005-08-07|2003|Lilya 4-Ever                                          |3.3267918 |
+|1798   |1951303|3     |2005-07-21|1987|Lethal Weapon                                         |3.4860563 |
+|4315   |1003710|2     |2005-10-18|2004|In Good Company                                       |3.0238142 |
+|886    |402388 |5     |2005-03-20|2004|Ray                                                   |4.3773384 |
+|13636  |2017963|5     |2005-10-17|1982|Fast Times at Ridgemont High                          |3.724718  |
+|15107  |2430508|4     |2005-12-20|2001|Ocean's Eleven                                        |3.7110322 |
+|442    |1168019|4     |2004-11-09|1988|Mississippi Burning                                   |3.9494915 |
+|13795  |1586484|4     |2005-09-16|1997|The Jackal                                            |3.6853166 |
+|11182  |1653898|4     |2005-09-06|2003|Master and Commander: The Far Side of the World       |3.8227444 |
+|1905   |700481 |4     |2005-06-16|2003|Pirates of the Caribbean: The Curse of the Black Pearl|3.8925242 |
+|175    |1915568|5     |2005-12-25|1992|Reservoir Dogs                                        |4.8323135 |
+|1428   |2370298|1     |2005-10-15|2003|The Recruit                                           |2.1803036 |
+|2372   |2238997|5     |2005-12-06|2004|The Bourne Supremacy                                  |4.0703397 |
+|13981  |694737 |1     |2005-11-16|1999|The Virgin Suicides                                   |2.9655886 |
+|13916  |1953308|4     |2005-09-23|2003|Danny Deckchair                                       |4.1259794 |
+|1060   |424491 |2     |2005-11-22|2005|King's Ransom                                         |2.9531908 |
+|3463   |546063 |1     |2005-11-01|1999|10 Things I Hate About You                            |3.117865  |
+|1145   |2122214|5     |2005-08-28|2001|The Wedding Planner                                   |4.1576495 |
+|3938   |389159 |4     |2005-11-14|2004|Shrek 2                                               |4.455697  |
+|11173  |1634795|3     |2005-12-13|2003|21 Grams                                              |3.4354646 |
+|10451  |1115367|3     |2005-05-10|1971|A Clockwork Orange                                    |2.9332886 |
+|16377  |320553 |5     |2005-04-25|1999|The Green Mile                                        |3.9340937 |
+|9905   |195897 |5     |2005-05-05|1959|Darby O'Gill and the Little People                    |3.6201842 |
+|311    |1160336|5     |2005-12-08|1994|Ed Wood                                               |3.9073887 |
+|2001   |1618536|3     |2005-12-27|1992|Under Siege                                           |2.615899  |
+|313    |1068001|5     |2005-06-24|2000|Pay It Forward                                        |3.6828375 |
+|897    |412453 |3     |2005-11-27|2004|Bride and Prejudice                                   |2.9024653 |
+|16784  |1569057|3     |2005-12-07|2005|The Sisterhood of the Traveling Pants                 |3.0494435 |
+|1998   |2072643|4     |2005-12-10|2005|Saving Face                                           |3.6626196 |
++-------+-------+------+----------+----+------------------------------------------------------+----------+
 only showing top 40 rows
-
 
 </code></pre>
