@@ -47,9 +47,9 @@ Daily votes from January 1, 2002. to December 31, 2005.
 
 ### Tools
 
-[Spark 2.4.0 MLlib](https://spark.apache.org/releases/spark-release-2-4-0.html)
-[Apache Zeppelin 0.8.0 ](https://zeppelin.apache.org/docs/0.8.0/)
-[Hortonworks HDP 3.0.1 ](https://hortonworks.com/tutorial/hortonworks-sandbox-guide/section/1/)
+[Spark 2.4.0 MLlib](https://spark.apache.org/releases/spark-release-2-4-0.html)  
+[Apache Zeppelin 0.8.0 ](https://zeppelin.apache.org/docs/0.8.0/)  
+[Hortonworks HDP 3.0.1 ](https://hortonworks.com/tutorial/hortonworks-sandbox-guide/section/1/)  
 
 
 ### Results
