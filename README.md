@@ -30,13 +30,26 @@ Next steps would be to use model on qualifying data set, to enrich data with add
 
 ### Dataset
 
-Netflix does not provide access to the original data set, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repository:
-[Netflix Prize Data Set](https://web.archive.org/web/20090925184737/http://archive.ics.uci.edu/ml/datasets/Netflix+Prize)
+Netflix does not provide access to the original data set, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repository or Academic torrents. Notice that there are much more votes in the last four years, and that the ratings are slightly skewed to the right.  
+
+[Netflix Prize Data Set - UCI](https://web.archive.org/web/20090925184737/http://archive.ics.uci.edu/ml/datasets/Netflix+Prize)
+[Netflix Prize Data Set - AA](http://academictorrents.com/details/9b13183dc4d60676b773c9e2cd6de5e5542cee9a)
+
+Votes distribution:
+![Ratings distribution - Matko Soric](https://raw.githubusercontent.com/matkosoric/Netflix-Recommendation-System/master/src/main/resources/images/netflix-rating-distribution.png?raw=true "Ratings distribution - Matko Soric")
+
+Daily votes from November 11, 1999. to December 31, 2001. 
+![Votes Time Series - Matko Soric](https://raw.githubusercontent.com/matkosoric/Netflix-Recommendation-System/master/src/main/resources/images/netflix-time-series-1.png?raw=true "Votes Time Series")
+
+Daily votes from January 1, 2002. to December 31, 2005.
+![Votes Time Series - Matko Soric](https://raw.githubusercontent.com/matkosoric/Netflix-Recommendation-System/master/src/main/resources/images/netflix-time-series-2.png?raw=true "Votes Time Series")
 
 
 ### Tools
 
-[Spark 2.4.0 MLlib](https://spark.apache.org/docs/latest/ml-guide.html)
+[Spark 2.4.0 MLlib](https://spark.apache.org/releases/spark-release-2-4-0.html)
+[Apache Zeppelin 0.8.0 ](https://zeppelin.apache.org/docs/0.8.0/)
+[Hortonworks HDP 3.0.1 ](https://hortonworks.com/tutorial/hortonworks-sandbox-guide/section/1/)
 
 
 ### Results
