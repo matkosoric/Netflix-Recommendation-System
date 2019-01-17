@@ -32,7 +32,7 @@ Next steps would be to use model on qualifying data set, to enrich data with add
 
 Netflix does not provide access to the original data set, probably due to the legal issues. Nonetheless, it can be downloaded from the archived UCI ML repository or Academic torrents. Notice that there are much more votes in the last four years, and that the ratings are slightly skewed to the right.  
 
-[Netflix Prize Data Set - UCI](https://web.archive.org/web/20090925184737/http://archive.ics.uci.edu/ml/datasets/Netflix+Prize)
+[Netflix Prize Data Set - UCI](https://web.archive.org/web/20090925184737/http://archive.ics.uci.edu/ml/datasets/Netflix+Prize)  
 [Netflix Prize Data Set - AA](http://academictorrents.com/details/9b13183dc4d60676b773c9e2cd6de5e5542cee9a)
 
 Votes distribution:
