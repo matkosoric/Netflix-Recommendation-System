@@ -15,7 +15,6 @@
         <spark.version>2.4.0</spark.version>
         <scala.version>2.11.8</scala.version>
         <scala.compat.version>2.11</scala.compat.version>
-        <stanford.corenlp.version>3.6.0</stanford.corenlp.version>
     </properties>
     <dependencies>
 
